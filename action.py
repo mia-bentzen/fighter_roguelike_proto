@@ -14,6 +14,11 @@ class Action:
     @staticmethod
     def execute(actor, *args, **kwargs):
         pass
+    
+    def __str__(self):
+        return f"Action({name})"
+    def __repr__(self):
+        return f"Action({name})"
 
 actions : Dict[str, Action] = {}
 def action(name, description, *, startup, recovery, input, **kwargs):

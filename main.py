@@ -25,6 +25,7 @@ def update(key):
 
 def main():
     t.open()
+    t.set("window.size = 120x40")
     t.set("input.filter = [keyboard, mouse]")
     t.set("input.precise = true")
 
@@ -35,11 +36,11 @@ def main():
         if t.has_input():
             while t.has_input():
                 key = t.read()
-        key = t.read()
-        update(key)
+                if key == t.TK_CLOSE:
+                    end()
+            update(key)
         
-        if key == t.TK_CLOSE:
-            end()
+        t.delay(1)
 
 if __name__ == "__main__":
     main()

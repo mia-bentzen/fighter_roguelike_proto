@@ -69,7 +69,7 @@ class Fire(Entity):
             return
         
         import random
-        if random.random()*100 < 6.5:
+        if random.random()*100 < 0.05:
             self.life//=2
             for i in range(1):
                 offset = random.choice([
@@ -90,8 +90,8 @@ class Fire(Entity):
 
 class Damage(Entity):
     char = '+'
-    fg = 'white'
-    bg = 'cyan'
+    fg = 'cyan'
+    bg = 'dark cyan'
     
     def __init__(self, owner, amount, x, y):
         super().__init__(x, y)
@@ -104,7 +104,8 @@ class Damage(Entity):
         
         import random
         
-        self.life_time = 10 + random.randint(-5, 5)
+        self.life_time = amount/100# + random.randint(-5, 5)
+        self.life_time = 75
         self.life = self.life_time
         
         for e in World.get().get_at(x, y):
@@ -112,6 +113,12 @@ class Damage(Entity):
                 e.damage(amount)
     
     def draw(self):
+        self.life -= 1
+        if self.life <= 0:
+            self.destroy()
+        
+        return super().draw()
+        
         ratio = self.life / self.life_time
         if ratio < 1/1.1:
             self.fg = 'cyan'
@@ -130,13 +137,6 @@ class Damage(Entity):
             self.bg = None
         
         super().draw()
-    
-    def tick(self):
-        from world import World
-        
-        self.life -= 1
-        if self.life <= 0:
-            self.destroy()
 
 
 
@@ -155,7 +155,7 @@ class Bomb(Entity):
         
         import random
         
-        self.life_time = 100 + random.randint(-25, 25)
+        self.life_time = 1000 + random.randint(-250, 250)
         self.life = self.life_time
     
     def draw(self):

@@ -22,6 +22,7 @@ class Player(Actor):
         self.specials = [
             actions['stab'],
             actions['slash'],
+            actions['long_slash'],
             actions['dash'],
             actions['slam'],
             actions['spit_fire'],
@@ -34,7 +35,7 @@ class Player(Actor):
         self.ty = t.state(t.TK_MOUSE_Y)
         
         if self.state == NORMAL:
-            if key == t.TK_Z: return ['wait', 1]
+            if key == t.TK_Z: return ['wait', 50]
             
             if key == t.TK_KP_6: return ['move',  1,  0]
             if key == t.TK_KP_3: return ['move',  1,  1]
@@ -45,9 +46,18 @@ class Player(Actor):
             if key == t.TK_KP_8: return ['move',  0, -1]
             if key == t.TK_KP_9: return ['move',  1, -1]
             
+            for n in range(1, 9):
+                if key == getattr(t, f"TK_{n}") and n-1 < len(self.specials):
+                    print(n, n-1, [x.name for x in self.specials], self.specials[n-1].name)
+                    ac = self.specials[n-1]
+                    self.state = TARGET_DIRECTION if ac.input == IDIRECTION else TARGET_LOCATION
+                    self._action = [ac.id]
+                    return None
+            
             if key == t.TK_MOUSE_LEFT and self.hover_action:
                 self.state = TARGET_DIRECTION if self.hover_action.input == IDIRECTION else TARGET_LOCATION
                 self._action = [self.hover_action.id]
+                return None
         
         elif self.state == TARGET_DIRECTION:
             if key == t.TK_ESCAPE:
@@ -95,6 +105,25 @@ class Player(Actor):
         mx = t.state(t.TK_MOUSE_X)
         my = t.state(t.TK_MOUSE_Y)
         
+        from world import World
+        entitiess_at = World.get().get_at(mx, my)
+        i = 0
+        for e in entitiess_at:
+            info = ""
+            
+            if issubclass(e.__class__, Actor):
+                info = f"{e.hp}/{e.max_hp}"
+                
+                if e.action and e.startup > 0:
+                    info += f", is preparing to {e.action.name}"
+                elif e.recovery > 0 and e.action:
+                    info += f", is recovering from {e.action.name}"
+            
+            if info: info = ": "+info
+            t.puts(0, h-1-i, f"{e.__class__.__name__}{info}")
+            
+            i+=1
+        
         if self.state == 1:
             t.put(self.x+2, self.y, '>')
             t.put(self.x-2, self.y, '<')
@@ -114,10 +143,15 @@ class Player(Actor):
         
         tooltip = ""
         
+        t.bkcolor('darkest gray')
+        t.color('white')
+        t.clear_area(w-16, 0, 16, h)
+        
         md(" ** SPECIALS ** ")
         md('')
+        j = 1
         for ac in self.specials:
-            name = ac.name
+            name = f"{ac.name} : {j}"
             
             t.bkcolor('transparent')
             t.color('white')
@@ -127,13 +161,14 @@ class Player(Actor):
                 t.bkcolor('white')
                 t.color('black')
                 
-                tooltip = f"- {ac.name} -\n{ac.description}\nstartup: {ac.startup}\nrecovery: {ac.recovery}"
+                tooltip = f"- {ac.name} -\n{ac.description}\nstartup: {ac.startup/1000} seconds\nrecovery: {ac.recovery/1000} seconds"
                 self.hover_action = ac
             
             elif self.state != NORMAL:
                 t.color('cyan' if actions[self._action[0]] == ac else 'gray')
             
             md(name)
+            j+=1
         
         t.bkcolor('transparent')
         t.color('white')

@@ -7,7 +7,7 @@ import random
 
 class Enemy(Actor):
     char = 'E'
-    fg = 'red'
+    fg = 'orange'
     
     def __init__(self, x, y):
         super().__init__(x, y)
@@ -25,11 +25,30 @@ class Enemy(Actor):
         dx /= dist
         dy /= dist
         
-        if dist > 10:
-            return ['move', round(dx), round(dy)]
-        if dist < 5:
-            return ['move', round(-dx), round(-dy)]
+        delta = random.choices([
+            (round(dx), round(dy)),
+            (round(-dx), round(-dy)),
+            None
+        ], [
+            8 if dist > 4 else 0.5,
+            8 if dist < 2 else 0.5,
+            0.1,
+        ])[0]
+        #if dist > 4:
+        #    return ['move', round(dx), round(dy)]
+        #if dist < 2:
+        #    return ['move', round(-dx), round(-dy)]
         
-        return self.do_action(random.choice(list(actions.keys())), player.x, player.y)
-        
+        if delta:
+            return ['move', *delta]
+        else:
+            ai_actions = [
+                'stab',
+                'slash',
+                'long_slash',
+            ]
+            
+            #ai_actions = list(actions.keys())
+            return self.do_action(random.choice(ai_actions), player.x, player.y)
+            
         return ['wait', 10]

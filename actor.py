@@ -27,15 +27,16 @@ class Actor(Entity):
             t.bkcolor('red')
             t.color('white')
             t.put(self.x, self.y, self.char)
+            
+            self.flash -= 1
         else:
             super().draw()
     
-    def tick(self):
-        if self.flash > 0:
-            self.flash -= 1
-    
     def damage(self, amount):
-        self.flash = 15
+        from world import log
+        self.flash = 250
+        
+        log(f"{self} took {amount} damage!")
         
         self.hp -= amount
         if self.hp <= 0:

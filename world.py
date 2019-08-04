@@ -9,17 +9,23 @@ from typing import List
 
 _world : 'World' = None
 
+_log = []
+
+def log(msg):
+    global _log
+    _log.append(msg)
+
 class World:
     def __init__(self):
         self.entities : List[Entity] = []
         
         self.act_index = 0
         
-        self.player = self.add(Player(16, 8))
+        self.player = self.add(Player(16, 18))
         
-        self.add(Enemy(64, 4))
-        self.add(Enemy(64, 8))
-        self.add(Enemy(64, 12))
+        self.add(Enemy(90, 14))
+        self.add(Enemy(90, 18))
+        self.add(Enemy(90, 22))
         
         self.turn = 0
     
@@ -53,10 +59,24 @@ class World:
             t.color('white')
         t.composition(t.TK_OFF)
         
-        t.puts(0, 0, f"HP: {self.player.hp:>3}/{self.player.max_hp:<3}")
-        t.puts(0, 1, f"HP: {self.player.hp:>3}/{self.player.max_hp:<3}")
-        t.puts(0, 2, f"T: {self.turn/1000:.2f} seconds")
-        t.puts(0, 4, f"E: {len(self.entities)}")
+        hud_width = 20
+        hud_height = 6
+        
+        t.bkcolor('darkest gray')
+        t.color('white')
+        t.clear_area(0, 0, t.state(t.TK_WIDTH), hud_height)
+        
+        t.puts(0, 0, f"HP: {self.player.hp:>3}/{self.player.max_hp:<3}", width=hud_width)
+        #t.puts(0, 1, f"HP: {self.player.hp:>3}/{self.player.max_hp:<3}")
+        t.puts(0, 2, f"T: {self.turn/1000:.2f} seconds", width=hud_width)
+        for i in range(hud_height):
+            t.put(hud_width, i, '|')
+        
+        y = 0
+        for i in range(max(0, len(_log)-hud_height), len(_log)):
+            t.puts(hud_width + 2, y, _log[i])
+            y+=1
+        #t.puts(0, 4, f"E: {len(self.entities)}")
         
         w = t.state(t.TK_WIDTH)
         h = t.state(t.TK_HEIGHT)
@@ -75,7 +95,7 @@ class World:
         
         t.refresh()
         if delay:
-            t.delay(25)
+            t.delay(1)
     
     def update(self, key):
         self.key = key
@@ -111,12 +131,15 @@ class World:
                     if actor.startup <= 0:
                         actor.action.execute(actor, *actor.action_args)
                         
-                        actor.action = None
+                        #actor.action = None
                     
                     actor.tick()
                     self.act_index += 1
                 elif actor.recovery > 0:
                     actor.recovery -= 1
+                    
+                    if actor.recovery <= 0:
+                        actor.action = None
                     
                     actor.tick()
                     self.act_index += 1
@@ -129,10 +152,9 @@ class World:
                         if name == 'wait':
                             actor.recovery = action_array[1]
                         if name == 'move':
-                            actor.x += action_array[1]
-                            actor.y += action_array[2]
+                            actor.move(action_array[1], action_array[2])
                             import random
-                            actor.recovery = 5
+                            actor.recovery = 100
                         if name == 'action':
                             actor.action_args = action_array[2:]
                             actor.action = action_array[1]

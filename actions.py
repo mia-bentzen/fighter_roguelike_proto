@@ -1,9 +1,9 @@
 from action import Action, action, actions, ILOCATION, IDIRECTION
 
 @action("Stab",
-        "Stab at enemy",
-        startup = 5,
-        recovery = 5,
+        "Stab at enemy, deals more damage at range",
+        startup = 50,
+        recovery = 50,
         input = IDIRECTION)
 def stab(actor, dx, dy):
     from world import World
@@ -14,15 +14,15 @@ def stab(actor, dx, dy):
     
     world = World.get()
     world.add(Damage(actor, 25, x, y))
-    world.add(Damage(actor, 25, x+dx, y+dy))
-    world.add(Damage(actor, 25, x+dx*2, y+dy*2))
+    world.add(Damage(actor, 50, x+dx, y+dy))
+    world.add(Damage(actor, 75, x+dx*2, y+dy*2))
     world.add(Damage(actor, 25, x+dy, y+dx))
     world.add(Damage(actor, 25, x-dy, y-dx))
 
 @action("Slash",
-        "Slash at enemy",
-        startup = 15,
-        recovery = 5,
+        "Slash at enemy, deals more damage in center",
+        startup = 150,
+        recovery = 50,
         input = IDIRECTION)
 def slash(actor, dx, dy):
     from world import World
@@ -32,16 +32,37 @@ def slash(actor, dx, dy):
     y = actor.y + dy * 2
     
     world = World.get()
-    world.add(Damage(actor, 60, x, y))
+    world.add(Damage(actor, 100, x, y))
     world.add(Damage(actor, 60, x+1, y))
     world.add(Damage(actor, 60, x-1, y))
     world.add(Damage(actor, 60, x, y+1))
     world.add(Damage(actor, 60, x, y-1))
 
+@action("Long Slash",
+        "Slash at enemy, deals more damage in center",
+        startup = 200,
+        recovery = 120,
+        input = IDIRECTION)
+def long_slash(actor, dx, dy):
+    from world import World
+    from fire import Damage
+    
+    x = actor.x + dx * 4
+    y = actor.y + dy * 4
+    
+    world = World.get()
+    world.add(Damage(actor, 40, actor.x+dx, actor.y+dy))
+    world.add(Damage(actor, 60, actor.x+dx*2, actor.y+dy*2))
+    world.add(Damage(actor, 100, x, y))
+    world.add(Damage(actor, 80, x+1, y))
+    world.add(Damage(actor, 80, x-1, y))
+    world.add(Damage(actor, 80, x, y+1))
+    world.add(Damage(actor, 80, x, y-1))
+
 @action("Dash",
         "Dash through enemies while dealing damage",
-        startup = 15,
-        recovery = 35,
+        startup = 150,
+        recovery = 350,
         input = IDIRECTION)
 def dash(actor, dx, dy):
     from world import World
@@ -62,8 +83,8 @@ def dash(actor, dx, dy):
 
 @action("Slam",
         "Slam down into the ground at target location",
-        startup = 35,
-        recovery = 75,
+        startup = 350,
+        recovery = 750,
         input = ILOCATION)
 def slam(actor, x, y):
     from world import World
@@ -81,8 +102,8 @@ def slam(actor, x, y):
 
 @action("Spit Fire",
         "...",
-        startup = 15,
-        recovery = 35,
+        startup = 150,
+        recovery = 350,
         input = IDIRECTION)
 def spit_fire(actor, dx, dy):
     from world import World
